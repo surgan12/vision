@@ -199,7 +199,7 @@ def normalize(tensor, mean, std, inplace=False):
     """
     if not _is_tensor_image(tensor):
         raise TypeError('tensor is not a torch image.')
-    
+
     if not inplace:
         tensor_clone = tensor.clone()
         # This is faster than using broadcasting, don't change without benchmarking
@@ -208,11 +208,12 @@ def normalize(tensor, mean, std, inplace=False):
         return tensor_clone
 
     else:
-         # This is faster than using broadcasting, don't change without benchmarking
+        # This is faster than using broadcasting, don't change without benchmarking
         for t, m, s in zip(tensor, mean, std):
             t.sub_(m).div_(s)
         return tensor
-    
+
+
 def resize(img, size, interpolation=Image.BILINEAR):
     r"""Resize the input PIL Image to the given size.
 
