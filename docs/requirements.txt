@@ -1,3 +1,3 @@
-sphinx
-sphinxcontrib-googleanalytics
+sphinx==1.8.4
+sphinxcontrib-googleanalytics==0.1
 -e git://github.com/snide/sphinx_rtd_theme.git#egg=sphinx_rtd_theme
