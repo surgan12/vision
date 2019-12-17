@@ -144,6 +144,7 @@ class Tester(unittest.TestCase):
         img = F.to_pil_image(img)
         img = F.pad(img, 1, (200, 200, 200))
         img_tensor = F.to_tensor(img)
+        img_tensor_clone = img_tensor.clone()
 
         const_padded_img = F.pad(img, 3, padding_mode='constant')
         const_padded_img_tensor = F_t.pad(img_tensor, 3, padding_mode='constant')
@@ -156,6 +157,8 @@ class Tester(unittest.TestCase):
         reflect_padded_img = F.pad(img, (3, 2), padding_mode='reflect')
         reflect_padded_img_tensor = F_t.pad(img_tensor, (3, 2), padding_mode='reflect')
         self.assertTrue(torch.equal(F.to_tensor(reflect_padded_img), reflect_padded_img_tensor))
+
+        self.assertTrue(torch.equal(img_tensor_clone, img_tensor))
 
 
 if __name__ == '__main__':
