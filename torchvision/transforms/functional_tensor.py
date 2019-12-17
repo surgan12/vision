@@ -1,6 +1,16 @@
 import torch
 import torchvision.transforms.functional as F
+import torch.nn.functional as Fn
+import numbers
+import sys
+import collections
 
+if sys.version_info < (3, 3):
+    Sequence = collections.Sequence
+    Iterable = collections.Iterable
+else:
+    Sequence = collections.abc.Sequence
+    Iterable = collections.abc.Iterable
 
 def vflip(img_tensor):
     """Vertically flip the given the Image Tensor.
@@ -30,6 +40,66 @@ def hflip(img_tensor):
         raise TypeError('tensor is not a torch image.')
 
     return img_tensor.flip(-1)
+
+
+def pad(img, padding, fill=0, padding_mode='constant'):
+    r"""Pad the given Image Tensor on all sides with specified padding mode and fill value.
+
+    Args:
+        img (Tensor): Image to be padded.
+        padding (int or tuple): Padding on each border. If a single int is provided this
+            is used to pad all borders. If tuple of length 2 is provided this is the padding
+            on left/right and top/bottom respectively. If a tuple of length 4 is provided
+            this is the padding for the left, top, right and bottom borders
+            respectively.
+        fill: Pixel fill value for constant fill. Default is 0. If a tuple of
+            length 3, it is used to fill R, G, B channels respectively.
+            This value is only used when the padding_mode is constant
+        padding_mode: Type of padding. Should be: constant, edge, reflect or symmetric. Default is constant.
+
+            - constant: pads with a constant value, this value is specified with fill
+
+            - edge: pads with the last value on the edge of the image
+
+            - reflect: pads with reflection of image (without repeating the last value on the edge)
+
+                       padding [1, 2, 3, 4] with 2 elements on both sides in reflect mode
+                       will result in [3, 2, 1, 2, 3, 4, 3, 2]
+
+    Returns:
+        Tensor Image: Padded Tensor image.
+    """
+    if not F._is_tensor_image(img):
+        raise TypeError('tensor is not a torch image.')
+
+    if not isinstance(padding, (numbers.Number, tuple)):
+        raise TypeError('Got inappropriate padding arg')
+    if not isinstance(fill, (numbers.Number, str, tuple)):
+        raise TypeError('Got inappropriate fill arg')
+    if not isinstance(padding_mode, str):
+        raise TypeError('Got inappropriate padding_mode arg')
+
+    if isinstance(padding, Sequence) and len(padding) not in [2, 4]:
+        raise ValueError("Padding must be an int or a 2, or 4 element tuple, not a " +
+                         "{} element tuple".format(len(padding)))
+
+    assert padding_mode in ['constant', 'replicate', 'reflect'], \
+        'Padding mode should be either constant, replicate, reflect '
+
+    if isinstance(padding, int):
+        pad_left = pad_right = pad_top = pad_bottom = padding
+    if isinstance(padding, Sequence) and len(padding) == 2:
+        pad_left = pad_right = padding[0]
+        pad_top = pad_bottom = padding[1]
+    if isinstance(padding, Sequence) and len(padding) == 4:
+        pad_left = padding[0]
+        pad_top = padding[1]
+        pad_right = padding[2]
+        pad_bottom = padding[3]
+
+    img_pad = Fn.pad(img.unsqueeze(0), (pad_left, pad_right, pad_top, pad_bottom), padding_mode)
+
+    return img_pad.squeeze(0)
 
 
 def crop(img, top, left, height, width):

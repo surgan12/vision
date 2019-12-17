@@ -138,6 +138,25 @@ class Tester(unittest.TestCase):
                                     (transforms.ToTensor()(cropped_pil_image[9]) * 255).to(torch.uint8)))
         self.assertTrue(torch.equal(img_tensor, img_tensor_clone))
 
+    def test_pad(self):
+        img = torch.zeros(3, 27, 27).byte()
+        img[:, :, 0] = 1  # Constant value added to leftmost edge
+        img = F.to_pil_image(img)
+        img = F.pad(img, 1, (200, 200, 200))
+        img_tensor = F.to_tensor(img)
+
+        const_padded_img = F.pad(img, 3, padding_mode='constant')
+        const_padded_img_tensor = F_t.pad(img_tensor, 3, padding_mode='constant')
+        self.assertTrue(torch.equal(F.to_tensor(const_padded_img), const_padded_img_tensor))
+
+        edge_padded_img = F.pad(img, 3, padding_mode='edge')
+        edge_padded_img_tensor = F_t.pad(img_tensor, 3, padding_mode='replicate')
+        self.assertTrue(torch.equal(F.to_tensor(edge_padded_img), edge_padded_img_tensor))
+
+        reflect_padded_img = F.pad(img, (3, 2), padding_mode='reflect')
+        reflect_padded_img_tensor = F_t.pad(img_tensor, (3, 2), padding_mode='reflect')
+        self.assertTrue(torch.equal(F.to_tensor(reflect_padded_img), reflect_padded_img_tensor))
+
 
 if __name__ == '__main__':
     unittest.main()
